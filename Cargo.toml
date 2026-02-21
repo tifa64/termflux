@@ -1,0 +1,18 @@
+[package]
+name = "tui_bg"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ratatui = { version = "0.29", features = ["crossterm"] }
+crossterm = { version = "0.28", features = ["event-stream"] }
+vt100 = "0.15"
+portable-pty = "0.8"
+tokio = { version = "1", features = ["full"] }
+futures-util = "0.3"
+anyhow = "1"
+rand = "0.8"
+noise = "0.9"
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+dirs = "5"
