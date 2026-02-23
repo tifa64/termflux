@@ -2,7 +2,7 @@ use ratatui::layout::Position;
 use ratatui::style::{Color, Modifier, Style};
 
 use crate::animation::Animation;
-use crate::color::{blend_rgb, convert_vt100_color, ratatui_color_to_rgb, resolve_to_rgb};
+use crate::color::{blend_rgb, convert_vt100_color, ratatui_color_to_rgb};
 use crate::terminal_state::TerminalState;
 
 pub struct Compositor {
@@ -25,6 +25,25 @@ impl Compositor {
         // Pass 1: Render animation into the entire buffer
         if self.animation_enabled {
             animation.render(area, buf);
+
+            // Apply opacity: blend animation with fallback background
+            if self.opacity < 1.0 {
+                let fb = ratatui_color_to_rgb(self.fallback_bg);
+                for row in 0..area.height {
+                    for col in 0..area.width {
+                        let pos = Position::new(area.x + col, area.y + row);
+                        if let Some(cell) = buf.cell_mut(pos) {
+                            let anim_bg = ratatui_color_to_rgb(cell.bg);
+                            let blended = blend_rgb(fb, anim_bg, self.opacity);
+                            cell.set_bg(Color::Rgb(blended.0, blended.1, blended.2));
+
+                            let anim_fg = ratatui_color_to_rgb(cell.fg);
+                            let blended_fg = blend_rgb(fb, anim_fg, self.opacity);
+                            cell.set_fg(Color::Rgb(blended_fg.0, blended_fg.1, blended_fg.2));
+                        }
+                    }
+                }
+            }
         } else {
             // Fill with configured fallback background
             for row in 0..area.height {
@@ -81,14 +100,6 @@ impl Compositor {
 
                 if cell.inverse() {
                     std::mem::swap(&mut fg, &mut bg);
-                }
-
-                // Opacity blending: blend shell bg with animation bg
-                if self.opacity < 1.0 {
-                    let anim_bg_rgb = ratatui_color_to_rgb(buf_cell.bg);
-                    let shell_bg_rgb = resolve_to_rgb(cell.bgcolor(), false);
-                    let blended = blend_rgb(anim_bg_rgb, shell_bg_rgb, self.opacity);
-                    bg = Color::Rgb(blended.0, blended.1, blended.2);
                 }
 
                 buf_cell.set_fg(fg);

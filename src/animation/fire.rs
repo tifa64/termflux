@@ -55,6 +55,14 @@ impl Fire {
 }
 
 impl Animation for Fire {
+    fn resize(&mut self, rows: u16, cols: u16) {
+        let width = cols as usize;
+        let height = rows as usize;
+        self.heat = vec![vec![0.0; width]; height];
+        self.width = width;
+        self.height = height;
+    }
+
     fn tick(&mut self, dt: f64) {
         self.time += dt;
 

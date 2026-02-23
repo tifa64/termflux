@@ -22,6 +22,7 @@ pub fn blend_rgb(a: (u8, u8, u8), b: (u8, u8, u8), factor: f32) -> (u8, u8, u8) 
 
 /// Resolve a vt100::Color to concrete RGB values.
 /// Default color resolves to a typical terminal foreground/background.
+#[allow(dead_code)]
 pub fn resolve_to_rgb(color: vt100::Color, is_fg: bool) -> (u8, u8, u8) {
     match color {
         vt100::Color::Default => {

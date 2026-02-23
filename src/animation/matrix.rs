@@ -76,6 +76,11 @@ impl MatrixRain {
 }
 
 impl Animation for MatrixRain {
+    fn resize(&mut self, rows: u16, cols: u16) {
+        self.max_cols = cols;
+        self.max_rows = rows;
+    }
+
     fn tick(&mut self, dt: f64) {
         self.time += dt;
         self.spawn_accum += dt;

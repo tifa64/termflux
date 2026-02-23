@@ -3,7 +3,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
-use crossterm::event::{Event, EventStream, KeyCode, KeyEventKind, MouseEvent};
+use crossterm::event::{Event, EventStream, KeyCode, KeyEventKind, KeyModifiers, MouseEvent};
 use futures_util::StreamExt;
 use ratatui::Terminal;
 use ratatui::backend::CrosstermBackend;
@@ -11,6 +11,7 @@ use tokio::sync::mpsc;
 use tokio::time::{interval, Duration};
 
 use crate::animation::Animation;
+use crate::animation::external::ExternalProgram;
 use crate::animation::fire::Fire;
 use crate::animation::matrix::MatrixRain;
 use crate::animation::starfield::Starfield;
@@ -38,17 +39,29 @@ impl App {
 
         let pty = PtyHandle::spawn(rows, cols, &config.shell)?;
 
-        let animations: Vec<Box<dyn Animation>> = vec![
+        let mut animations: Vec<Box<dyn Animation>> = vec![
             Box::new(Starfield::new(STAR_COUNT)),
             Box::new(MatrixRain::new(cols, rows)),
             Box::new(Fire::new(cols, rows)),
         ];
+
+        // Add external animation if configured
+        let mut external_index = None;
+        if let Some(ref cmd) = config.external_command {
+            let repo_url = config.external_command_repo.as_deref();
+            let install_cmd = config.external_command_install.as_deref();
+            if let Some(ext) = ExternalProgram::new(cmd, rows, cols, repo_url, install_cmd) {
+                external_index = Some(animations.len());
+                animations.push(Box::new(ext));
+            }
+        }
 
         // Resolve initial animation index from config
         let animation_index = match config.animation.as_str() {
             "starfield" => 0,
             "matrix" => 1,
             "fire" => 2,
+            "external" => external_index.unwrap_or(0),
             "none" => animations.len(), // past end = "none"
             _ => 0,
         };
@@ -118,6 +131,9 @@ impl App {
                         AppEvent::Resize(cols, rows) => {
                             self.terminal_state.resize(rows, cols);
                             let _ = self.pty.resize(rows, cols);
+                            for anim in &mut self.animations {
+                                anim.resize(rows, cols);
+                            }
                         }
                         AppEvent::DecreaseOpacity => {
                             self.compositor.opacity = (self.compositor.opacity - 0.1).max(0.0);
@@ -297,25 +313,27 @@ async fn input_task(
                     continue;
                 }
 
-                // Intercept F9-F12 as app hotkeys
-                match key_event.code {
-                    KeyCode::F(9) => {
-                        let _ = event_tx.send(AppEvent::DecreaseOpacity).await;
-                        continue;
+                // Intercept Alt+key as app hotkeys
+                if key_event.modifiers.contains(KeyModifiers::ALT) {
+                    match key_event.code {
+                        KeyCode::Char('j') => {
+                            let _ = event_tx.send(AppEvent::DecreaseOpacity).await;
+                            continue;
+                        }
+                        KeyCode::Char('k') => {
+                            let _ = event_tx.send(AppEvent::IncreaseOpacity).await;
+                            continue;
+                        }
+                        KeyCode::Char('a') => {
+                            let _ = event_tx.send(AppEvent::ToggleAnimation).await;
+                            continue;
+                        }
+                        KeyCode::Char('n') => {
+                            let _ = event_tx.send(AppEvent::CycleAnimation).await;
+                            continue;
+                        }
+                        _ => {}
                     }
-                    KeyCode::F(10) => {
-                        let _ = event_tx.send(AppEvent::IncreaseOpacity).await;
-                        continue;
-                    }
-                    KeyCode::F(11) => {
-                        let _ = event_tx.send(AppEvent::ToggleAnimation).await;
-                        continue;
-                    }
-                    KeyCode::F(12) => {
-                        let _ = event_tx.send(AppEvent::CycleAnimation).await;
-                        continue;
-                    }
-                    _ => {}
                 }
 
                 let app_cursor = application_cursor.load(Ordering::Relaxed);

@@ -19,6 +19,17 @@ pub struct Config {
 
     #[serde(default = "default_disable_animation_alt_screen")]
     pub disable_animation_alt_screen: bool,
+
+    #[serde(default)]
+    pub external_command: Option<String>,
+
+    #[serde(default)]
+    pub external_command_repo: Option<String>,
+
+    /// Shell command to run when the external binary is not found.
+    /// e.g. "cargo install astroterm --root ~/.config/termflux"
+    #[serde(default)]
+    pub external_command_install: Option<String>,
 }
 
 fn default_animation() -> String {
@@ -54,14 +65,24 @@ impl Default for Config {
             shell: default_shell(),
             background: default_background(),
             disable_animation_alt_screen: default_disable_animation_alt_screen(),
+            external_command: None,
+            external_command_repo: None,
+            external_command_install: None,
         }
     }
 }
 
 impl Config {
     pub fn load() -> Self {
-        if let Some(config_dir) = dirs::config_dir() {
-            let path = config_dir.join("tui_bg").join("config.toml");
+        // Check local config.toml first
+        if let Ok(contents) = std::fs::read_to_string("config.toml") {
+            if let Ok(config) = toml::from_str(&contents) {
+                return config;
+            }
+        }
+        // Fall back to ~/.config/termflux/config.toml
+        if let Some(home) = dirs::home_dir() {
+            let path = home.join(".config").join("termflux").join("config.toml");
             if let Ok(contents) = std::fs::read_to_string(&path) {
                 if let Ok(config) = toml::from_str(&contents) {
                     return config;
