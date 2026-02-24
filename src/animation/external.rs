@@ -16,6 +16,7 @@ pub struct ExternalProgram {
     parser: vt100::Parser,
     rx: mpsc::Receiver<Vec<u8>>,
     _master: Box<dyn MasterPty + Send>,
+    default_bg: Color,
 }
 
 /// Resolve the external command binary path.
@@ -148,6 +149,7 @@ impl ExternalProgram {
         cols: u16,
         repo_url: Option<&str>,
         install_cmd: Option<&str>,
+        default_bg: Color,
     ) -> Option<Self> {
         // Parse command string into program + args
         let parts: Vec<&str> = command.split_whitespace().collect();
@@ -188,6 +190,7 @@ impl ExternalProgram {
             parser: vt100::Parser::new(rows, cols, 0),
             rx,
             _master: pair.master,
+            default_bg,
         })
     }
 
@@ -256,9 +259,9 @@ impl Animation for ExternalProgram {
                 let mut fg = convert_vt100_color(cell.fgcolor());
                 let mut bg = convert_vt100_color(cell.bgcolor());
 
-                // Resolve default colors to dark background for animation layer
+                // Resolve default colors to configured background for animation layer
                 if bg == Color::Reset {
-                    bg = Color::Rgb(0, 0, 0);
+                    bg = self.default_bg;
                 }
                 if fg == Color::Reset {
                     fg = Color::Rgb(204, 204, 204);

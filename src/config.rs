@@ -14,8 +14,8 @@ pub struct Config {
     #[serde(default = "default_shell")]
     pub shell: String,
 
-    #[serde(default = "default_background")]
-    pub background: String,
+    #[serde(default)]
+    pub background: Option<String>,
 
     #[serde(default = "default_disable_animation_alt_screen")]
     pub disable_animation_alt_screen: bool,
@@ -48,9 +48,7 @@ fn default_shell() -> String {
     std::env::var("SHELL").unwrap_or_else(|_| "/bin/sh".to_string())
 }
 
-fn default_background() -> String {
-    "#0a0a23".to_string()
-}
+const DEFAULT_BACKGROUND: &str = "#0a0a23";
 
 fn default_disable_animation_alt_screen() -> bool {
     false
@@ -63,7 +61,7 @@ impl Default for Config {
             opacity: default_opacity(),
             fps: default_fps(),
             shell: default_shell(),
-            background: default_background(),
+            background: None,
             disable_animation_alt_screen: default_disable_animation_alt_screen(),
             external_command: None,
             external_command_repo: None,
@@ -92,10 +90,26 @@ impl Config {
         Self::default()
     }
 
+    /// Fill in `background` if it's `None`, using the detected color or the
+    /// built-in fallback.
+    pub fn resolve_background(&mut self, detected: Option<String>) {
+        if self.background.is_none() {
+            self.background = Some(
+                detected.unwrap_or_else(|| DEFAULT_BACKGROUND.to_string()),
+            );
+        }
+    }
+
+    /// Return the resolved background hex string (e.g. `"#0a0a23"`).
+    /// Must be called after `resolve_background`.
+    pub fn background_hex(&self) -> &str {
+        self.background.as_deref().unwrap_or(DEFAULT_BACKGROUND)
+    }
+
     /// Parse the background hex color string to RGB tuple.
     /// Accepts "#RRGGBB" format. Falls back to (10, 10, 35) on parse failure.
     pub fn background_rgb(&self) -> (u8, u8, u8) {
-        parse_hex_color(&self.background).unwrap_or((10, 10, 35))
+        parse_hex_color(self.background_hex()).unwrap_or((10, 10, 35))
     }
 }
 
@@ -128,7 +142,7 @@ mod tests {
         assert_eq!(config.opacity, 0.5);
         assert_eq!(config.fps, 60);
         assert_eq!(config.shell, "/bin/bash");
-        assert_eq!(config.background, "#ff0000");
+        assert_eq!(config.background, Some("#ff0000".to_string()));
     }
 
     #[test]
@@ -147,7 +161,7 @@ mod tests {
         assert_eq!(config.animation, "starfield");
         assert_eq!(config.opacity, 0.8);
         assert_eq!(config.fps, 30);
-        assert_eq!(config.background, "#0a0a23");
+        assert_eq!(config.background, None);
         assert!(!config.disable_animation_alt_screen);
     }
 
@@ -175,7 +189,7 @@ mod tests {
     #[test]
     fn test_background_rgb() {
         let config = Config {
-            background: "#0a0a23".to_string(),
+            background: Some("#0a0a23".to_string()),
             ..Config::default()
         };
         assert_eq!(config.background_rgb(), (10, 10, 35));
@@ -184,9 +198,42 @@ mod tests {
     #[test]
     fn test_background_rgb_fallback() {
         let config = Config {
-            background: "invalid".to_string(),
+            background: Some("invalid".to_string()),
             ..Config::default()
         };
         assert_eq!(config.background_rgb(), (10, 10, 35));
+    }
+
+    #[test]
+    fn test_background_rgb_none_uses_default() {
+        let config = Config::default();
+        assert_eq!(config.background, None);
+        assert_eq!(config.background_hex(), "#0a0a23");
+        assert_eq!(config.background_rgb(), (10, 10, 35));
+    }
+
+    #[test]
+    fn test_resolve_background_with_detected() {
+        let mut config = Config::default();
+        config.resolve_background(Some("#ff0000".to_string()));
+        assert_eq!(config.background, Some("#ff0000".to_string()));
+        assert_eq!(config.background_hex(), "#ff0000");
+    }
+
+    #[test]
+    fn test_resolve_background_without_detected() {
+        let mut config = Config::default();
+        config.resolve_background(None);
+        assert_eq!(config.background, Some("#0a0a23".to_string()));
+    }
+
+    #[test]
+    fn test_resolve_background_does_not_overwrite_explicit() {
+        let mut config = Config {
+            background: Some("#abcdef".to_string()),
+            ..Config::default()
+        };
+        config.resolve_background(Some("#111111".to_string()));
+        assert_eq!(config.background, Some("#abcdef".to_string()));
     }
 }

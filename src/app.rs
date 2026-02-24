@@ -34,8 +34,7 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(rows: u16, cols: u16) -> Result<Self> {
-        let config = Config::load();
+    pub fn new(rows: u16, cols: u16, config: Config) -> Result<Self> {
 
         let pty = PtyHandle::spawn(rows, cols, &config.shell)?;
 
@@ -47,10 +46,12 @@ impl App {
 
         // Add external animation if configured
         let mut external_index = None;
+        let bg_rgb = config.background_rgb();
+        let bg_color = ratatui::style::Color::Rgb(bg_rgb.0, bg_rgb.1, bg_rgb.2);
         if let Some(ref cmd) = config.external_command {
             let repo_url = config.external_command_repo.as_deref();
             let install_cmd = config.external_command_install.as_deref();
-            if let Some(ext) = ExternalProgram::new(cmd, rows, cols, repo_url, install_cmd) {
+            if let Some(ext) = ExternalProgram::new(cmd, rows, cols, repo_url, install_cmd, bg_color) {
                 external_index = Some(animations.len());
                 animations.push(Box::new(ext));
             }
@@ -66,11 +67,10 @@ impl App {
             _ => 0,
         };
 
-        let bg_rgb = config.background_rgb();
         let compositor = Compositor {
             animation_enabled: animation_index < animations.len(),
             opacity: config.opacity,
-            fallback_bg: ratatui::style::Color::Rgb(bg_rgb.0, bg_rgb.1, bg_rgb.2),
+            fallback_bg: bg_color,
         };
 
         Ok(Self {
@@ -87,6 +87,9 @@ impl App {
     pub async fn run(mut self) -> Result<()> {
         let mut terminal = setup_terminal()?;
         let _guard = TerminalGuard;
+
+        // Set terminal emulator background to match config (fills window padding)
+        set_terminal_background(self.config.background_hex());
 
         // PTY reader → channel (blocking I/O bridged to async)
         let pty_reader = self.pty.try_clone_reader()?;
@@ -374,6 +377,7 @@ struct TerminalGuard;
 
 impl Drop for TerminalGuard {
     fn drop(&mut self) {
+        reset_terminal_background();
         let _ = crossterm::terminal::disable_raw_mode();
         let _ = crossterm::execute!(
             io::stdout(),
@@ -382,4 +386,16 @@ impl Drop for TerminalGuard {
             crossterm::cursor::Show,
         );
     }
+}
+
+/// Set the terminal emulator's background color via OSC 11.
+fn set_terminal_background(hex: &str) {
+    let _ = write!(io::stdout(), "\x1b]11;{}\x07", hex);
+    let _ = io::stdout().flush();
+}
+
+/// Reset the terminal emulator's background to its default via OSC 110.
+fn reset_terminal_background() {
+    let _ = write!(io::stdout(), "\x1b]110\x07");
+    let _ = io::stdout().flush();
 }
