@@ -19,7 +19,7 @@ If the external program is not installed, Termflux can auto-install it via a cus
 ### From source
 
 ```sh
-git clone https://github.com/user/termflux.git
+git clone https://github.com/tndoan/termflux.git
 cd termflux
 cargo build --release
 ```
