@@ -67,11 +67,21 @@ fps = 30
 # Shell to launch (defaults to $SHELL)
 # shell = "/bin/zsh"
 
-# Background color in hex
-background = "#0a0a23"
+# Background color in hex (auto-detected from terminal if omitted)
+# background = "#0a0a23"
 
 # Suppress animation when in alternate screen (vim, htop, etc.)
 disable_animation_alt_screen = false
+```
+
+### Background color
+
+By default, Termflux auto-detects your terminal's background color using the OSC 11 escape sequence. This works in most modern terminals (Terminal.app, iTerm2, Kitty, Ghostty, Alacritty, WezTerm, GNOME Terminal, Konsole, etc.) and ensures the animation background matches your terminal with no configuration needed.
+
+If detection fails (e.g. Linux TTY, tmux without passthrough), it falls back to `#0a0a23`. You can also set an explicit value in your config:
+
+```toml
+background = "#1a1b26"
 ```
 
 ### External program animation
