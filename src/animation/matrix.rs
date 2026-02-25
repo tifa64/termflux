@@ -29,16 +29,18 @@ pub struct MatrixRain {
     max_rows: u16,
     time: f64,
     spawn_accum: f64, // accumulated time for spawning new drops
+    bg: Color,
 }
 
 impl MatrixRain {
-    pub fn new(cols: u16, rows: u16) -> Self {
+    pub fn new(cols: u16, rows: u16, bg: Color) -> Self {
         Self {
             drops: Vec::new(),
             max_cols: cols,
             max_rows: rows,
             time: 0.0,
             spawn_accum: 0.0,
+            bg,
         }
     }
 
@@ -113,8 +115,7 @@ impl Animation for MatrixRain {
     }
 
     fn render(&self, area: Rect, buf: &mut Buffer) {
-        // Fill background with black
-        let bg = Color::Rgb(0, 5, 0);
+        let bg = self.bg;
         for row in 0..area.height {
             for col in 0..area.width {
                 let pos = Position::new(area.x + col, area.y + row);
@@ -161,7 +162,7 @@ mod tests {
     fn test_matrix_renders_to_buffer() {
         let area = Rect::new(0, 0, 80, 24);
         let mut buf = Buffer::empty(area);
-        let mut rain = MatrixRain::new(80, 24);
+        let mut rain = MatrixRain::new(80, 24, Color::Rgb(0, 0, 0));
         // Tick several times to let drops spawn and fall
         for _ in 0..30 {
             rain.tick(0.033);
@@ -180,7 +181,7 @@ mod tests {
 
     #[test]
     fn test_matrix_tick_spawns_drops() {
-        let mut rain = MatrixRain::new(80, 24);
+        let mut rain = MatrixRain::new(80, 24, Color::Rgb(0, 0, 0));
         assert!(rain.drops.is_empty());
         for _ in 0..10 {
             rain.tick(0.033);
@@ -190,7 +191,7 @@ mod tests {
 
     #[test]
     fn test_matrix_drops_removed_offscreen() {
-        let mut rain = MatrixRain::new(80, 24);
+        let mut rain = MatrixRain::new(80, 24, Color::Rgb(0, 0, 0));
         // Spawn a drop and move it far off screen
         rain.drops.push(Drop {
             col: 0,

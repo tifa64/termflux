@@ -11,10 +11,11 @@ pub struct Fire {
     width: usize,
     height: usize,
     time: f64,
+    bg: Color,
 }
 
 impl Fire {
-    pub fn new(cols: u16, rows: u16) -> Self {
+    pub fn new(cols: u16, rows: u16, bg: Color) -> Self {
         let width = cols as usize;
         let height = rows as usize;
         Self {
@@ -23,6 +24,7 @@ impl Fire {
             width,
             height,
             time: 0.0,
+            bg,
         }
     }
 
@@ -122,7 +124,7 @@ impl Animation for Fire {
                 if let Some(cell) = buf.cell_mut(pos) {
                     cell.set_symbol(symbol);
                     cell.set_fg(fg_color);
-                    cell.set_bg(Color::Rgb(0, 0, 0));
+                    cell.set_bg(self.bg);
                 }
             }
         }
@@ -138,7 +140,7 @@ mod tests {
     fn test_fire_renders_to_buffer() {
         let area = Rect::new(0, 0, 40, 12);
         let mut buf = Buffer::empty(area);
-        let mut fire = Fire::new(40, 12);
+        let mut fire = Fire::new(40, 12, Color::Rgb(0, 0, 0));
         // Tick several times to build up heat
         for _ in 0..30 {
             fire.tick(0.033);
@@ -157,7 +159,7 @@ mod tests {
 
     #[test]
     fn test_fire_tick_generates_heat() {
-        let mut fire = Fire::new(40, 12);
+        let mut fire = Fire::new(40, 12, Color::Rgb(0, 0, 0));
         for _ in 0..20 {
             fire.tick(0.033);
         }
@@ -168,7 +170,7 @@ mod tests {
 
     #[test]
     fn test_fire_heat_propagates_upward() {
-        let mut fire = Fire::new(40, 12);
+        let mut fire = Fire::new(40, 12, Color::Rgb(0, 0, 0));
         for _ in 0..60 {
             fire.tick(0.033);
         }

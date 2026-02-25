@@ -38,16 +38,17 @@ impl App {
 
         let pty = PtyHandle::spawn(rows, cols, &config.shell)?;
 
+        let bg_rgb = config.background_rgb();
+        let bg_color = ratatui::style::Color::Rgb(bg_rgb.0, bg_rgb.1, bg_rgb.2);
+
         let mut animations: Vec<Box<dyn Animation>> = vec![
-            Box::new(Starfield::new(STAR_COUNT)),
-            Box::new(MatrixRain::new(cols, rows)),
-            Box::new(Fire::new(cols, rows)),
+            Box::new(Starfield::new(STAR_COUNT, bg_color)),
+            Box::new(MatrixRain::new(cols, rows, bg_color)),
+            Box::new(Fire::new(cols, rows, bg_color)),
         ];
 
         // Add external animation if configured
         let mut external_index = None;
-        let bg_rgb = config.background_rgb();
-        let bg_color = ratatui::style::Color::Rgb(bg_rgb.0, bg_rgb.1, bg_rgb.2);
         if let Some(ref cmd) = config.external_command {
             let repo_url = config.external_command_repo.as_deref();
             let install_cmd = config.external_command_install.as_deref();

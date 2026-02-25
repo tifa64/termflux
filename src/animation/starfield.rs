@@ -16,10 +16,11 @@ pub struct Star {
 pub struct Starfield {
     pub stars: Vec<Star>,
     time: f64,
+    bg: Color,
 }
 
 impl Starfield {
-    pub fn new(count: usize) -> Self {
+    pub fn new(count: usize, bg: Color) -> Self {
         let mut rng = rand::thread_rng();
         let stars = (0..count)
             .map(|_| {
@@ -33,7 +34,7 @@ impl Starfield {
                 }
             })
             .collect();
-        Self { stars, time: 0.0 }
+        Self { stars, time: 0.0, bg }
     }
 
     fn star_char(z: f64) -> &'static str {
@@ -54,17 +55,8 @@ impl Starfield {
         Color::Rgb(brightness, brightness, brightness)
     }
 
-    fn bg_color(row: u16, total_rows: u16) -> Color {
-        // Gradient from dark navy (top) to slightly lighter navy (bottom)
-        let t = if total_rows > 1 {
-            row as f64 / (total_rows - 1) as f64
-        } else {
-            0.0
-        };
-        let r = (5.0 + t * 5.0) as u8;
-        let g = (5.0 + t * 5.0) as u8;
-        let b = (20.0 + t * 15.0) as u8;
-        Color::Rgb(r, g, b)
+    fn bg_color(&self) -> Color {
+        self.bg
     }
 }
 
@@ -85,9 +77,9 @@ impl Animation for Starfield {
         let width = area.width as f64;
         let height = area.height as f64;
 
-        // Fill background with navy gradient
+        // Fill background
         for row in 0..area.height {
-            let bg = Self::bg_color(row, area.height);
+            let bg = self.bg_color();
             for col in 0..area.width {
                 let pos = Position::new(area.x + col, area.y + row);
                 if let Some(cell) = buf.cell_mut(pos) {
@@ -127,7 +119,7 @@ mod tests {
     fn test_starfield_renders_to_buffer() {
         let area = Rect::new(0, 0, 80, 24);
         let mut buf = Buffer::empty(area);
-        let sf = Starfield::new(100);
+        let sf = Starfield::new(100, Color::Rgb(10, 10, 35));
         sf.render(area, &mut buf);
         // Assert at least some cells have non-space content (stars)
         let has_stars = (0..24).any(|y| {
@@ -142,7 +134,7 @@ mod tests {
 
     #[test]
     fn test_starfield_tick_moves_stars() {
-        let mut sf = Starfield::new(50);
+        let mut sf = Starfield::new(50, Color::Rgb(10, 10, 35));
         let positions_before: Vec<f64> = sf.stars.iter().map(|s| s.x).collect();
         sf.tick(0.1);
         let positions_after: Vec<f64> = sf.stars.iter().map(|s| s.x).collect();
@@ -150,28 +142,23 @@ mod tests {
     }
 
     #[test]
-    fn test_starfield_background_gradient() {
+    fn test_starfield_background_uses_configured_color() {
         let area = Rect::new(0, 0, 10, 5);
         let mut buf = Buffer::empty(area);
-        let sf = Starfield::new(0); // no stars, just background
+        let bg = Color::Rgb(26, 27, 38);
+        let sf = Starfield::new(0, bg); // no stars, just background
         sf.render(area, &mut buf);
 
-        // Top row bg
+        // All cells should use the configured background color
         let top_bg = buf.cell(Position::new(0, 0)).unwrap().bg;
-        // Bottom row bg
         let bottom_bg = buf.cell(Position::new(0, 4)).unwrap().bg;
-
-        // Extract blue channel — bottom should be brighter
-        if let (Color::Rgb(_, _, b_top), Color::Rgb(_, _, b_bottom)) = (top_bg, bottom_bg) {
-            assert!(b_bottom >= b_top);
-        } else {
-            panic!("Expected Rgb colors");
-        }
+        assert_eq!(top_bg, bg);
+        assert_eq!(bottom_bg, bg);
     }
 
     #[test]
     fn test_star_wraps_around() {
-        let mut sf = Starfield::new(1);
+        let mut sf = Starfield::new(1, Color::Rgb(10, 10, 35));
         sf.stars[0].x = 0.01;
         sf.stars[0].speed = 1.0; // very fast
         sf.tick(0.1);
