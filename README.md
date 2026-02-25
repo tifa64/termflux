@@ -112,7 +112,7 @@ This clones the repo, runs `make`, and copies the binary to `~/.config/termflux/
 
 ## Example
 
-# Use `weathr` as background
+### Use `weathr` as background
 <img src="gif/weathr.gif" width="600" height="400" alt="Demo">
 Example `config.toml`
 
@@ -126,7 +126,7 @@ external_command = "weathr --hide-hud"
 external_command_install = "mkdir -p ~/.config/termflux/bin && curl -fsSL -o ~/.config/termflux/bin/weathr https://github.com/Veirt/weathr/releases/latest/download/weathr-macos-arm64 && chmod +x ~/.config/termflux/bin/weathr"
 ```
 
-# Use `astroterm` as background
+### Use `astroterm` as background
 
 <img src="gif/astroterm.gif" width="600" height="400" alt="Demo">
 Example `config.toml`
@@ -142,7 +142,7 @@ external_command = "astroterm --color --constellations --speed 10000 --fps 64 --
 external_command_install = 'mkdir -p ~/.config/termflux/bin && curl -fsSL -o ~/.config/termflux/bin/astroterm https://github.com/da-luce/astroterm/releases/latest/download/astroterm-darwin-aarch64 && chmod +x ~/.config/termflux/bin/astroterm'
 ```
 
-# Use `top` as background (because why not?)
+### Use `top` as background (because why not?)
 
 <img src="gif/top.gif" width="600" height="400" alt="Demo">
 Example `config.toml`
@@ -155,6 +155,20 @@ disable_animation_alt_screen = false
 animation = "external"
 external_command = "top"
 ```
+
+### Use `Starfield` (built-in) 
+
+<img src="gif/Starfield.gif" width="600" height="400" alt="Demo">
+Example `config.toml`
+
+```
+animation = "starfield"
+opacity = 0.3
+fps = 30                                                                         
+disable_animation_alt_screen = false 
+```
+
+Replace `starfield` by `fire` or `matrix` if you want to use these built-in animation
 
 ## License
 
