@@ -1,0 +1,30 @@
+# Animation: "starfield", "matrix", "fire", "external", or "none"
+animation = "starfield"
+
+# Animation opacity (0.0 = invisible, 1.0 = full)
+opacity = 0.8
+
+# Frames per second
+fps = 30
+
+# Shell to launch (defaults to $SHELL)
+# shell = "/bin/zsh"
+
+# Background color in hex. If omitted, Termflux auto-detects your
+# terminal's background color via OSC 11. Falls back to "#0a0a23".
+# background = "#0a0a23"
+
+# Suppress animation when in alternate screen (vim, htop, etc.)
+disable_animation_alt_screen = false
+
+# --- External program animation ---
+# Any terminal program can be used as an animation background.
+#
+# animation = "external"
+# external_command = "astroterm --color --constellations --speed 10000 --fps 64 --city Singapore"
+#
+# Auto-install if the binary is not found (runs via sh -c):
+# external_command_install = "mkdir -p ~/.config/termflux/bin && curl -fsSL -o ~/.config/termflux/bin/astroterm https://github.com/da-luce/astroterm/releases/latest/download/astroterm-darwin-aarch64 && chmod +x ~/.config/termflux/bin/astroterm"
+#
+# Or auto-build from a git repository:
+# external_command_repo = "https://github.com/user/myprogram.git"
