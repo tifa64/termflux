@@ -20,6 +20,16 @@ If the external program is not installed, Termflux can auto-install it via a cus
 
 ## Installation
 
+### Pre-built binaries
+
+Download the latest binary for your platform from the [Releases](https://github.com/tndoan/termflux/releases) page. Binaries are available for macOS (Intel and Apple Silicon) and Linux (x86_64 and aarch64).
+
+On macOS, you may need to remove the quarantine attribute before running:
+
+```sh
+xattr -d com.apple.quarantine termflux-aarch64-apple-darwin
+```
+
 ### From source
 
 ```sh
