@@ -2,6 +2,10 @@
 
 Animated backgrounds for your terminal. Termflux runs your shell inside a composited terminal, overlaying animated effects behind your shell output.
 
+## Demo
+
+<img src="gif/weathr.gif" width="600" height="400" alt="Demo">
+
 ## Built-in Animations
 
 - **Starfield** - Parallax 3D star field with twinkling
