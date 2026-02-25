@@ -6,6 +6,14 @@ Animated backgrounds for your terminal. Termflux runs your shell inside a compos
 
 <img src="gif/weathr.gif" width="600" height="400" alt="Demo">
 
+## Quick Start
+
+```sh
+cargo install termflux && termflux
+```
+
+That's it — your terminal now has an animated background. You need [Rust](https://rustup.rs/) installed first.
+
 ## Built-in Animations
 
 - **Starfield** - Parallax 3D star field with twinkling
