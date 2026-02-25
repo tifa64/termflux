@@ -110,6 +110,52 @@ external_command_repo = "https://github.com/user/myprogram.git"
 
 This clones the repo, runs `make`, and copies the binary to `~/.config/termflux/bin/`.
 
+## Example
+
+# Use `weathr` as background
+<img src="gif/weathr.gif" width="600" height="400" alt="Demo">
+Example `config.toml`
+
+```
+opacity = 0.3
+fps = 30                                                                         
+disable_animation_alt_screen = false   
+
+animation = "external"
+external_command = "weathr --hide-hud"
+external_command_install = "mkdir -p ~/.config/termflux/bin && curl -fsSL -o ~/.config/termflux/bin/weathr https://github.com/Veirt/weathr/releases/latest/download/weathr-macos-arm64 && chmod +x ~/.config/termflux/bin/weathr"
+```
+
+# Use `astroterm` as background
+
+<img src="gif/astroterm.gif" width="600" height="400" alt="Demo">
+Example `config.toml`
+
+```
+opacity = 0.3
+fps = 30                                                                         
+disable_animation_alt_screen = false   
+
+animation = "external"
+external_command = "astroterm --color --constellations --speed 10000 --fps 64 --city Singapore"
+# Auto-install if not found (runs via sh -c)
+external_command_install = 'mkdir -p ~/.config/termflux/bin && curl -fsSL -o ~/.config/termflux/bin/astroterm https://github.com/da-luce/astroterm/releases/latest/download/astroterm-darwin-aarch64 && chmod +x ~/.config/termflux/bin/astroterm'
+```
+
+# Use `top` as background (because why not?)
+
+<img src="gif/top.gif" width="600" height="400" alt="Demo">
+Example `config.toml`
+
+```
+opacity = 0.3
+fps = 30                                                                         
+disable_animation_alt_screen = false   
+
+animation = "external"
+external_command = "top"
+```
+
 ## License
 
 MIT
