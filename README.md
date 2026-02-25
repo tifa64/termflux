@@ -122,8 +122,11 @@ This clones the repo, runs `make`, and copies the binary to `~/.config/termflux/
 
 ## Example
 
+Note: the `external_command_install` is for `macOS`. If you use other OS, please customize.
+
 ### Use `weathr` as background
 <img src="gif/weathr.gif" width="600" height="400" alt="Demo">
+
 Example `config.toml`
 
 ```
@@ -139,6 +142,7 @@ external_command_install = "mkdir -p ~/.config/termflux/bin && curl -fsSL -o ~/.
 ### Use `astroterm` as background
 
 <img src="gif/astroterm.gif" width="600" height="400" alt="Demo">
+
 Example `config.toml`
 
 ```
@@ -155,6 +159,7 @@ external_command_install = 'mkdir -p ~/.config/termflux/bin && curl -fsSL -o ~/.
 ### Use `top` as background (because why not?)
 
 <img src="gif/top.gif" width="600" height="400" alt="Demo">
+
 Example `config.toml`
 
 ```
@@ -169,6 +174,7 @@ external_command = "top"
 ### Use `Starfield` (built-in) 
 
 <img src="gif/Starfield.gif" width="600" height="400" alt="Demo">
+
 Example `config.toml`
 
 ```

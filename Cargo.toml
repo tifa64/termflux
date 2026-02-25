@@ -2,6 +2,14 @@
 name = "termflux"
 version = "0.1.0"
 edition = "2021"
+description = "Animated backgrounds for your terminal"
+license = "MIT"
+repository = "https://github.com/tndoan/termflux"
+homepage = "https://github.com/tndoan/termflux"
+readme = "README.md"
+keywords = ["terminal", "animation", "tui", "background"]
+categories = ["command-line-utilities"]
+exclude = ["gif/", "*.cast", "*.swp"]
 
 [dependencies]
 ratatui = { version = "0.29", features = ["crossterm"] }
