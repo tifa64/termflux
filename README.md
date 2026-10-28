@@ -195,6 +195,19 @@ disable_animation_alt_screen = false
 
 Replace `starfield` by `fire` or `matrix` if you want to use these built-in animation
 
+### Use `Purr` (built-in)
+
+<img src="gif/Purr.gif" width="600" height="400" alt="Demo">
+
+Example `config.toml`
+
+```
+animation = "purr"
+opacity = 0.8
+fps = 30
+disable_animation_alt_screen = false
+```
+
 ## License
 
 MIT
